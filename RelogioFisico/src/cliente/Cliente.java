@@ -11,7 +11,6 @@ import java.text.SimpleDateFormat;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.ResolverStyle;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -29,56 +28,115 @@ public class Cliente {
 	private String[] datas;
 	private HashMap<Integer, List<String>> datasSeparadas;
 	private List<String> lista_datas;
+	private List<String> lista_tempos_t1_t0;
+	private List<String> lista_tempos_t2_t3;
 
 	public Cliente() {
 		lista_datas = new ArrayList<String>();
+		lista_tempos_t1_t0 = new ArrayList<String>();
+		lista_tempos_t2_t3 = new ArrayList<String>();
 	}
 
 	private static final DateTimeFormatter FORMATO_HORAS = DateTimeFormatter.ofPattern("HH:mm:ss")
 			.withResolverStyle(ResolverStyle.STRICT);
 
 	private static LocalTime faltando(LocalTime agora, LocalTime desejada) {
-        return desejada.minusHours(agora.getHour()).minusMinutes(agora.getMinute()).minusSeconds(agora.getSecond());
-				//desejada.minusHours(agora.getHour()).minusMinutes(agora.getMinute());
+		return desejada.minusHours(agora.getHour()).minusMinutes(agora.getMinute()).minusSeconds(agora.getSecond());
 	}
 
-	private static void mostrar(LocalTime horario, String objetivo, String aux1, String aux2) {
+	private LocalTime mostrar(LocalTime horario, String objetivo, String aux1, String aux2) {
 		LocalTime desejada = LocalTime.parse(objetivo, FORMATO_HORAS);
 		LocalTime falta = faltando(horario, desejada);
-		System.out.println("Diferença de "+aux1+" "+aux2);
-		System.out.println("falta:"+falta);
-//		System.out.println("Entre " + horario.format(FORMATO_HORAS) + " e " + desejada.format(FORMATO_HORAS)
-//				+ ", a diferença é de " + falta.format(FORMATO_HORAS) + ".");
+		System.out.println("Diferença de " + aux2 + " e " + aux1 + " = " + falta);
+		return falta;
 	}
 
 	private void calcularTempo() {
-
-		System.out.println("---------------");
-		System.out.println(lista_datas);
 
 		String tempo0 = lista_datas.get(0);
 		String tempo1 = lista_datas.get(1);
 		String tempo2 = lista_datas.get(2);
 		String tempo3 = lista_datas.get(3);
 
-		System.out.println("Tempo 0:" + tempo0);
-		System.out.println("Tempo 1:" + tempo1);
-		System.out.println("Tempo 2:" + tempo2);
-		System.out.println("Tempo 3:" + tempo3);
-
 		LocalTime lt0 = LocalTime.parse(tempo0);
-		LocalTime lt1 = LocalTime.parse(tempo1);
-		LocalTime lt2 = LocalTime.parse(tempo2);
 		LocalTime lt3 = LocalTime.parse(tempo3);
 
-		mostrar(lt0, tempo1, tempo1, tempo0);
-		mostrar(lt3, tempo2, tempo2, tempo3);
+		LocalTime diferenca_t1_t0 = mostrar(lt0, tempo1, tempo1, tempo0);
+		LocalTime diferenca_t2_t3 = mostrar(lt3, tempo2, tempo2, tempo3);
 
+		String aux_diferenca_t1_t0 = String.valueOf(diferenca_t1_t0);
+		String aux_diferenca_t2_t3 = String.valueOf(diferenca_t2_t3);
+
+		String[] datas_t1_t0 = aux_diferenca_t1_t0.split(":");
+		String[] datas_t2_t3 = aux_diferenca_t2_t3.split(":");
+
+		for (int i = 0; i < datas_t1_t0.length; i++) {
+			String data = datas_t1_t0[i];
+
+			lista_tempos_t1_t0.add(data);
+
+		}
+
+		for (int i = 0; i < datas_t2_t3.length; i++) {
+			String data = datas_t2_t3[i];
+			lista_tempos_t2_t3.add(data);
+
+		}
+
+		int soma_segudos = Integer.parseInt(lista_tempos_t1_t0.get(2)) + Integer.parseInt(lista_tempos_t2_t3.get(2));
+
+		int soma_minutos = Integer.parseInt(lista_tempos_t1_t0.get(1)) + Integer.parseInt(lista_tempos_t2_t3.get(1));
+		int soma_horas = Integer.parseInt(lista_tempos_t1_t0.get(0)) + Integer.parseInt(lista_tempos_t2_t3.get(0));
+
+		String aux_horario_defasagem = "";
+		if (soma_segudos >= 60) {
+			int aux_calc_segundos = soma_segudos - 60;
+			soma_minutos++;
+			int aux_calc_minutos = soma_minutos;
+			if (soma_minutos >= 60) {
+				aux_calc_minutos = aux_calc_minutos - 60;
+				soma_horas++;
+			}
+
+			if (aux_calc_segundos != 0) {
+				aux_calc_segundos = aux_calc_segundos / 2;
+
+			}
+
+			if (aux_calc_minutos != 0) {
+				aux_calc_minutos = aux_calc_minutos / 2;
+
+			}
+			if (soma_horas != 0) {
+				soma_horas = soma_horas / 2;
+
+			}
+
+			aux_horario_defasagem = soma_horas + " horas e " + aux_calc_minutos + " minutos e " + aux_calc_segundos
+					+ " segundos";
+		} else {
+
+			if (soma_segudos != 0) {
+				soma_segudos = soma_segudos / 2;
+			}
+			if (soma_minutos != 0) {
+				soma_minutos = soma_minutos / 2;
+			}
+			if (soma_horas != 0) {
+				soma_horas = soma_horas / 2;
+
+			}
+			aux_horario_defasagem = soma_horas + " horas e " + soma_minutos + " minutos e " + soma_segudos
+					+ " segundos";
+
+		}
+
+		System.out.println("A defasagem é de:" + aux_horario_defasagem);
 	}
 
 	private String horaAtual() {
 		SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
-		Date hora = Calendar.getInstance().getTime(); // Ou qualquer outra forma que tem
+		Date hora = Calendar.getInstance().getTime();
 		String dataFormatada = sdf.format(hora);
 		return dataFormatada;
 	}
@@ -86,7 +144,6 @@ public class Cliente {
 	private String gerarHora() throws NoSuchAlgorithmException, NoSuchProviderException {
 		secureRandom = SecureRandom.getInstance("SHA1PRNG", "SUN");
 		String dataFormatada = horaAtual();
-		// horaAtual();
 		System.out.println("Hora atual:" + dataFormatada);
 
 		int aux_gerador_segundos = secureRandom.nextInt(59);
@@ -168,46 +225,24 @@ public class Cliente {
 	}
 
 	private void processarRespostaServidor(String resposta) throws InterruptedException {
-
-		System.out.println("Resposta do servidor:" + resposta);
 		datas = resposta.split("-");
-
+		
 		for (int i = 0; i < datas.length; i++) {
-			System.out.println("Datas:" + datas[i]);
 			lista_datas.add(datas[i]);
 		}
-
-		for (int i = 0; i < datas.length; i++) {
-			String data = datas[i];
-			juntarDatas(data, i);
-		}
-
 		t3 = datas[0];
-		// int aux_t3 = Integer.parseInt(datasSeparadas.get(0)) +5;
-//		t3 = String.valueOf(aux_t3);
-//		
 
-		juntarDatas(t3);
-//
-		System.out.println(datasSeparadas);
-		System.out.println("--------");
+		processarTempo3(t3);
 		calcularTempo();
 
 	}
 
-	private void juntarDatas(String data) {
+	private void processarTempo3(String data) {
 
 		String[] cortarDatas = null;
 
 		if (data.contains(":")) {
-			String aux_data = "";
 			cortarDatas = data.split(":");
-			String aux_datas1 = "";
-			for (int j = 0; j < cortarDatas.length; j++) {
-				aux_data = cortarDatas[j];
-
-				getDatasSeparadas().get(3).add(aux_data);
-			}
 
 			String aux_segundos1 = "";
 			for (int i = 0; i < cortarDatas.length; i++) {
@@ -216,11 +251,9 @@ public class Cliente {
 					break;
 				}
 				getDatasSeparadas().get(4).add(cortarDatas[i]);
-				// aux_datas1 += cortarDatas[i]+":";
 			}
-			System.out.println("Aux segundos1:"+aux_segundos1);
+
 			int calc_segundos1 = Integer.parseInt(aux_segundos1) + 5;
-			System.out.println("Soma dos segundos:"+calc_segundos1);
 			int minutos = Integer.parseInt(getDatasSeparadas().get(4).get(1));
 			int horas = Integer.parseInt(getDatasSeparadas().get(4).get(0));
 			String aux_tempo1 = "";
@@ -240,97 +273,33 @@ public class Cliente {
 				if (minutos < 10) {
 					aux_minutos1 = "0" + minutos;
 				}
-				
+
 				String aux_segundos_digito = "";
-				
-				if(aux_calc_segundos < 10) {
-					aux_segundos_digito = "0"+aux_calc_segundos;
+
+				if (aux_calc_segundos < 10) {
+					aux_segundos_digito = "0" + aux_calc_segundos;
 					aux_tempo1 = horas + ":" + aux_minutos1 + ":" + aux_segundos_digito;
 
-				}else {
+				} else {
 					aux_tempo1 = horas + ":" + aux_minutos1 + ":" + aux_calc_segundos;
 				}
 
-		
 			} else {
-				
-				
+
 				if (minutos < 10) {
 					aux_minutos1 = "0" + minutos;
 				}
-				
-				if(calc_segundos1 < 10) {
-					aux_segundos2 = "0"+calc_segundos1;
+
+				if (calc_segundos1 < 10) {
+					aux_segundos2 = "0" + calc_segundos1;
 				}
 				aux_tempo1 = horas + ":" + aux_minutos1 + ":" + aux_segundos2;
 			}
 
-			System.out.println("Aux tempo:" + aux_tempo1);
 			lista_datas.add(aux_tempo1);
-			System.out.println("Segundos:" + aux_segundos1);
-
-			List<String> lista_tempo = getDatasSeparadas().get(3);
-			int calc_segundos = Integer.parseInt(lista_tempo.get(2)) + 5;
-
-			int aux_segundos = 0;
-
-			String conversao_segundos = "";
-
-			if (calc_segundos > 60) {
-				aux_segundos = calc_segundos - 60;
-				conversao_segundos = String.valueOf(aux_segundos);
-
-				if (aux_segundos < 10) {
-					conversao_segundos = "0" + String.valueOf(aux_segundos);
-				}
-
-				int calc_minutos = Integer.parseInt(lista_tempo.get(1)) + 1;
-				int calc_horas = Integer.parseInt(lista_tempo.get(0));
-
-				if (calc_minutos > 59) {
-					calc_horas += 1;
-				}
-				String aux_tempo = String.valueOf(calc_horas + calc_minutos) + conversao_segundos;
-				lista_tempo.clear();
-				lista_tempo.add(aux_tempo);
-			} else {
-
-				lista_tempo.remove(2);
-				lista_tempo.add(2, String.valueOf(calc_segundos));
-				String aux_tempo = "";
-				for (int i = 0; i < lista_tempo.size(); i++) {
-					String aux_datas = lista_tempo.get(i);
-					aux_tempo += aux_datas;
-				}
-
-				lista_tempo.clear();
-				lista_tempo.add(aux_tempo);
-
-			}
-
-			getDatasSeparadas().put(3, lista_tempo);
 		}
 	}
-
-	private void juntarDatas(String data, int i) {
-
-		String[] cortarDatas = null;
-
-		if (getDatasSeparadas().containsKey(i)) {
-			if (data.contains(":")) {
-				String aux_data = "";
-				cortarDatas = data.split(":");
-				for (int j = 0; j < cortarDatas.length; j++) {
-					aux_data += cortarDatas[j];
-					// datasSeparadas.get(i).add(aux_data);
-
-				}
-				getDatasSeparadas().get(i).add(aux_data);
-				aux_data = "";
-			}
-		}
-	}
-
+	
 	public int getPorta() {
 		return porta;
 	}
